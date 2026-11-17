@@ -30,7 +30,7 @@ Drop, paste, or attach a video that's over your upload limit. Normally Discord w
 
    ```bash
    cd Vencord/src/userplugins
-   git clone https://github.com/<your-username>/autoCompress.git autoCompress.desktop
+   git clone https://github.com/Awardxz/autoCompress.git autoCompress.desktop
    ```
 
 3. Build and inject:
