@@ -15,8 +15,9 @@ const Native = VencordNative.pluginHelpers.AutoCompress as PluginNative<typeof i
 const logger = new Logger("AutoCompress");
 
 const MiB = 1024 * 1024;
-// Discord's free upload limit (TbF in Discord's bundle is 0xa00000).
-const FREE_LIMIT = 10 * MiB;
+// Discord's effective upload limit is never below 20 MiB: its client checks
+// `Math.max(0x1400000, userOrGuildLimit)`, even though free accounts report 10 MiB.
+const FREE_LIMIT = 20 * MiB;
 const GUILD_LIMITS: [feature: string, bytes: number][] = [
     ["MAX_FILE_SIZE_100_MB", 100 * MiB],
     ["MAX_FILE_SIZE_50_MB", 50 * MiB],
@@ -29,7 +30,7 @@ const PremiumUtils: { getUserMaxFileSize?(user: unknown): number; } = findByProp
 const settings = definePluginSettings({
     targetSizeMb: {
         type: OptionType.NUMBER,
-        description: "Target size in MB for compressed videos. 0 = use your Discord upload limit (10 MB without Nitro).",
+        description: "Target size in MB for compressed videos. 0 = use your Discord upload limit (20 MB without Nitro).",
         default: 0,
     },
     preset: {
@@ -61,7 +62,7 @@ function getUploadLimit(guildId: string | null | undefined) {
         const userLimit = PremiumUtils.getUserMaxFileSize?.(UserStore.getCurrentUser());
         if (typeof userLimit === "number" && userLimit > limit) limit = userLimit;
     } catch (e) {
-        logger.warn("Couldn't read the user upload limit, assuming 10 MB", e);
+        logger.warn("Couldn't read the user upload limit, assuming 20 MB", e);
     }
 
     const features = guildId ? GuildStore.getGuild(guildId)?.features : null;

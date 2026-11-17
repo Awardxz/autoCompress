@@ -7,7 +7,7 @@ Drop, paste, or attach a video that's over your upload limit. Normally Discord w
 ## Features
 
 - **Works with every way of attaching files:** drag & drop, paste, and the **+** button.
-- **Knows your real limit:** 10 MB on free accounts, plus Nitro and server boost limits. You can also set your own target size.
+- **Knows your real limit:** 20 MB on free accounts, plus Nitro and server boost limits. You can also set your own target size.
 - **Two-pass encoding:** ffmpeg runs twice so the file lands close to the target size without going over.
 - **Smart downscaling:** long videos are scaled down (1080p → 720p → 480p …) and capped at 30 fps, so they look clean instead of blocky.
 - **Retries:** if the first encode overshoots the limit, it tries again at a lower bitrate.
@@ -62,7 +62,7 @@ Drop, paste, or attach a video that's over your upload limit. Normally Discord w
 
 ## Limitations
 
-- **Very long videos won't fit.** At 10 MB, a 10-minute video only gets about 130 kbps. When a video is below ~40 kbps of video after the budget for audio, the plugin refuses and tells you the longest length that would fit.
+- **Very long videos won't fit.** At 20 MB, a 10-minute video only gets about 260 kbps. When a video is below ~40 kbps of video after the budget for audio, the plugin refuses and tells you the longest length that would fit.
 - **It's slow on weak PCs.** Encoding takes about as long as the video, or longer, depending on your CPU and preset.
 - **Desktop only.** It needs to run ffmpeg as a native program, so it doesn't work on Discord in a browser.
 - **Discord updates can break it.** If Discord changes its upload code, the patch stops matching, and Vencord will tell you the plugin's patch failed. Please open an issue if that happens.
