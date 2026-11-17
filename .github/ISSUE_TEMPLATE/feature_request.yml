@@ -1,0 +1,31 @@
+name: Feature request
+description: Suggest an idea or improvement for AutoCompress.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      placeholder: My GPU is idle while my CPU is maxed out during compression.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: What would you like to happen?
+      placeholder: An option to use hardware encoding (NVENC / QuickSync / AMF) when it's available.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      description: Workarounds you use today, or other ways this could work.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else?
+      description: Screenshots, examples from other tools, links.

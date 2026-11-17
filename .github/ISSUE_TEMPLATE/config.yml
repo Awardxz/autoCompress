@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Help installing Vencord custom plugins
+    url: https://docs.vencord.dev/installing/custom-plugins/
+    about: Vencord's guide for building from source and adding user plugins. Please don't ask Vencord's support channels about AutoCompress.

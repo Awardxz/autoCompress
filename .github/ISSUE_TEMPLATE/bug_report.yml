@@ -1,0 +1,104 @@
+name: Bug report
+description: Something isn't working, e.g. a video wasn't compressed, the upload failed, or the progress bar is wrong.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please check these first, because they fix most problems:
+        - **Fully restart Discord** after updating (quit from the system tray, not Ctrl+R). Part of the plugin runs in Discord's background process, and Ctrl+R doesn't reload it.
+        - Make sure `ffmpeg -version` works in a terminal, or that the ffmpeg path in the plugin settings is correct.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I'm on the latest commit of AutoCompress and rebuilt Vencord (`pnpm build`).
+          required: true
+        - label: I fully restarted Discord after building.
+          required: true
+        - label: I searched existing issues and this hasn't been reported.
+          required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+      placeholder: I dropped a 45 MB video. I expected it to compress, but Discord showed "Your files are too powerful".
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a DM
+        2. Drag in a 45 MB .mov file
+        3. ...
+    validations:
+      required: true
+
+  - type: input
+    id: video
+    attributes:
+      label: Video details
+      description: File type, size, length and resolution, if you know them.
+      placeholder: .mov, 45 MB, 1:20, 1080p 60fps (iPhone)
+
+  - type: dropdown
+    id: client
+    attributes:
+      label: Discord client
+      options:
+        - Discord Stable
+        - Discord PTB
+        - Discord Canary
+        - Vesktop
+        - Other (say below)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+
+  - type: input
+    id: ffmpeg
+    attributes:
+      label: ffmpeg version
+      description: The first line of `ffmpeg -version`.
+      placeholder: ffmpeg version 8.0.1-full_build-www.gyan.dev
+    validations:
+      required: true
+
+  - type: input
+    id: vencord
+    attributes:
+      label: Vencord version
+      description: Shown at the bottom of Settings → Vencord, or run `git rev-parse --short HEAD` in your Vencord folder.
+      placeholder: e75ac9a
+
+  - type: textarea
+    id: settings
+    attributes:
+      label: Plugin settings
+      description: Anything you changed from the defaults (target size, preset, ffmpeg path, progress bar).
+      placeholder: Target size 8 MB, preset Medium
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output
+      description: |
+        In Discord, press Ctrl+Shift+I (Cmd+Option+I on macOS), open the Console tab, and type `AutoCompress` in the filter box. Paste everything that shows up, especially red errors and any "patch had no effect" lines.
+      render: text
