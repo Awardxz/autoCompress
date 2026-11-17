@@ -22,10 +22,20 @@ const SIZE_SAFETY = 0.94;
 const MIN_VIDEO_KBPS = 40;
 const MAX_ATTEMPTS = 3;
 
+export type Stage = "reading" | "pass1" | "pass2" | "done";
+
 interface Job {
     progress: number;
+    stage: Stage;
+    attempt: number;
     proc?: ChildProcess;
     cancelled: boolean;
+}
+
+export interface JobStatus {
+    progress: number;
+    stage: Stage;
+    attempt: number;
 }
 
 const jobs = new Map<string, Job>();
@@ -150,7 +160,7 @@ export async function compress(
     fileName: string,
     rawOpts: CompressOptions
 ): Promise<CompressResult | CompressError> {
-    const job: Job = { progress: 0, cancelled: false };
+    const job: Job = { progress: 0, stage: "reading", attempt: 1, cancelled: false };
     jobs.set(jobId, job);
 
     let dir: string | undefined;
@@ -176,6 +186,7 @@ export async function compress(
         }
 
         for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+            job.attempt = attempt;
             const maxH = pickMaxHeight(videoKbps);
             const filters: string[] = [];
             if (info.height == null || info.height > maxH)
@@ -196,6 +207,7 @@ export async function compress(
             ];
 
             for (const pass of [1, 2] as const) {
+                job.stage = pass === 1 ? "pass1" : "pass2";
                 const args = pass === 1
                     ? [...common, "-pass", "1", "-an", "-f", "null", devNull]
                     : [
@@ -223,6 +235,7 @@ export async function compress(
             const { size } = await stat(outPath);
             if (size <= targetBytes) {
                 job.progress = 1;
+                job.stage = "done";
                 const data = await readFile(outPath);
                 return { ok: true, data: new Uint8Array(data.buffer, data.byteOffset, data.byteLength), size, attempts: attempt };
             }
@@ -242,8 +255,9 @@ export async function compress(
     }
 }
 
-export function getProgress(_: IpcMainInvokeEvent, jobId: string): number | null {
-    return jobs.get(jobId)?.progress ?? null;
+export function getProgress(_: IpcMainInvokeEvent, jobId: string): JobStatus | null {
+    const job = jobs.get(jobId);
+    return job ? { progress: job.progress, stage: job.stage, attempt: job.attempt } : null;
 }
 
 export function cancel(_: IpcMainInvokeEvent, jobId?: string) {

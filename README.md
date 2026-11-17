@@ -49,7 +49,7 @@ Drop, paste, or attach a video that's over your upload limit. Normally Discord w
 | Target size (MB) | `0` | `0` uses your Discord upload limit. Set a number to aim lower. |
 | Preset | Faster | The x264 speed/quality trade-off. Slower presets look a bit better at the same size. |
 | ffmpeg path | `ffmpeg` | Full path to ffmpeg if it isn't on your `PATH`. |
-| Show progress | On | Shows a toast at 25 / 50 / 75 %. |
+| Show progress | On | A progress bar for each video, showing the current pass, percent done, time left, and a cancel button. |
 
 ## How it works
 
@@ -104,6 +104,8 @@ The build follows the link back to this folder, so Vencord's `@api/...` and `@ut
 ```
 
 Then run `pnpm watch` in `Vencord/` and reload Discord with Ctrl+R after each change.
+
+> **Changes to `native.ts` need a full restart.** It runs in Discord's background (main) process, and Ctrl+R doesn't reload that. Quit Discord from the system tray and open it again.
 
 ## License
 

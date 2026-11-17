@@ -11,6 +11,9 @@ import type { Channel } from "@vencord/discord-types";
 import { findByPropsLazy } from "@webpack";
 import { GuildStore, showToast, UploadHandler, UserStore } from "@webpack/common";
 
+import { ProgressRow, removeAllRows } from "./progress";
+import managedStyle from "./styles.css?managed";
+
 const Native = VencordNative.pluginHelpers.AutoCompress as PluginNative<typeof import("./native")>;
 const logger = new Logger("AutoCompress");
 
@@ -51,7 +54,7 @@ const settings = definePluginSettings({
     },
     showProgress: {
         type: OptionType.BOOLEAN,
-        description: "Show progress toasts while compressing.",
+        description: "Show a progress bar (with a cancel button) while compressing.",
         default: true,
     },
 });
@@ -92,40 +95,62 @@ function toast(text: string, variant: "default" | "success" | "critical" = "defa
 
 async function compressFile(file: File, targetBytes: number): Promise<File | null> {
     const jobId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    toast(`Compressing ${file.name} (${fmtMb(file.size)} → under ${fmtMb(targetBytes)})…`);
+    let cancelled = false;
 
-    let lastStep = 0;
-    const poll = settings.store.showProgress
+    const row = settings.store.showProgress
+        ? new ProgressRow(file.name, `${fmtMb(file.size)} → under ${fmtMb(targetBytes)}`, () => {
+            cancelled = true;
+            Native.cancel(jobId).catch(() => { });
+        })
+        : null;
+
+    // Without the progress panel, errors still need to be visible somewhere.
+    const reportError = (msg: string) => row ? row.fail(msg) : toast(`AutoCompress: ${msg}`, "critical", 6000);
+
+    let polling = false;
+    const poll = row
         ? setInterval(async () => {
-            const p = await Native.getProgress(jobId).catch(() => null);
-            if (p == null) return;
-            const step = Math.floor(p * 4); // 25% steps
-            if (step > lastStep && step < 4) {
-                lastStep = step;
-                toast(`Compressing ${file.name}: ${step * 25}%`, "default", 1500);
+            if (polling) return;
+            polling = true;
+            try {
+                const status: unknown = await Native.getProgress(jobId);
+                // Older native.ts returned a bare number; Discord keeps that loaded until a full restart.
+                if (typeof status === "number") row.update({ progress: status, stage: status < 0.5 ? "pass1" : "pass2", attempt: 1 });
+                else if (status) row.update(status as NonNullable<Awaited<ReturnType<typeof Native.getProgress>>>);
+            } catch { } finally {
+                polling = false;
             }
-        }, 1000)
+        }, 250)
         : null;
 
     try {
         const input = new Uint8Array(await file.arrayBuffer());
+        if (cancelled) {
+            row?.cancelled();
+            return null;
+        }
+
         const res = await Native.compress(jobId, input, file.name, {
             ffmpegPath: settings.store.ffmpegPath,
             targetBytes,
             preset: settings.store.preset,
         });
 
+        if (cancelled) {
+            row?.cancelled();
+            return null;
+        }
         if (!res.ok) {
-            toast(`AutoCompress: ${res.error}`, "critical", 6000);
+            reportError(res.error);
             return null;
         }
 
+        row?.succeed(`Done · ${fmtMb(file.size)} → ${fmtMb(res.size)}`);
         const name = file.name.replace(/\.[^.]+$/, "") + ".mp4";
-        toast(`Compressed ${file.name}: ${fmtMb(file.size)} → ${fmtMb(res.size)}`, "success");
         return new File([res.data as Uint8Array<ArrayBuffer>], name, { type: "video/mp4" });
     } catch (e) {
         logger.error("Compression failed", e);
-        toast("AutoCompress: compression failed, see the console for details.", "critical", 6000);
+        reportError("Compression failed. See the console (Ctrl+Shift+I) for details.");
         return null;
     } finally {
         if (poll) clearInterval(poll);
@@ -170,6 +195,7 @@ export default definePlugin({
     authors: [{ name: "AutoCompress contributors", id: 0n }],
     tags: ["Media", "Utility"],
     settings,
+    managedStyle,
 
     patches: [
         {
@@ -209,5 +235,6 @@ export default definePlugin({
 
     stop() {
         Native.cancel().catch(() => { });
+        removeAllRows();
     },
 });
