@@ -73,7 +73,37 @@ Client mods are against Discord's Terms of Service. Use at your own risk. AutoCo
 
 ## Contributing
 
-Issues and PRs are welcome. To test changes, run `pnpm build` in your Vencord checkout (or `pnpm watch` while developing), then reload Discord with Ctrl+R.
+Issues and PRs are welcome.
+
+### Dev setup
+
+Keep this repo and a Vencord checkout next to each other, then link the plugin in instead of copying it:
+
+```
+projects/
+├── Vencord/
+└── autoCompress/
+```
+
+Windows (PowerShell):
+
+```powershell
+New-Item -ItemType Junction -Path Vencord\src\userplugins\autoCompress.desktop -Target autoCompress
+```
+
+macOS / Linux:
+
+```bash
+ln -s ../../../autoCompress Vencord/src/userplugins/autoCompress.desktop
+```
+
+The build follows the link back to this folder, so Vencord's `@api/...` and `@utils/...` imports need Vencord's TypeScript config. Add a `tsconfig.json` here. It's gitignored.
+
+```json
+{ "extends": "../Vencord/tsconfig.json" }
+```
+
+Then run `pnpm watch` in `Vencord/` and reload Discord with Ctrl+R after each change.
 
 ## License
 

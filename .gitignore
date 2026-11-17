@@ -4,3 +4,12 @@ node_modules/
 Thumbs.db
 .idea/
 .vscode/
+
+# Local dev link to a sibling Vencord checkout (see README)
+tsconfig.json
+
+# Test videos
+*.mp4
+*.mov
+*.mkv
+*.webm
