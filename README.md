@@ -4,6 +4,10 @@ A [Vencord](https://vencord.dev) plugin that compresses videos with **ffmpeg** w
 
 Drop, paste, or attach a video that's over your upload limit. Normally Discord would say "Your files are too powerful". With AutoCompress, the video is re-encoded to fit and added to your message.
 
+<p align="center">
+  <img src="assets/progress.gif" width="440" alt="Two videos compressing in AutoCompress's progress panel above the Discord message box. Each bar moves through pass 1 and pass 2 with a percent and time left, then turns green with the final size.">
+</p>
+
 ## Features
 
 - **Works with every way of attaching files:** drag & drop, paste, and the **+** button.
